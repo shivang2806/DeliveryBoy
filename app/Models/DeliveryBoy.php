@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class DeliveryBoy extends Model
 {
     use HasFactory;
-    const DeliveryDuration = 2; //min
+    const DeliveryDuration = 2; //minutes
 
     protected $fillable = ['name', 'capacity']; // Assuming delivery boys have name and capacity
 

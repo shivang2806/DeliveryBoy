@@ -37,7 +37,6 @@ class AssignOrdersCron extends Command
      */
     public function handle()
     {
-        \Log::info('Cron Started');
 
         $currentTime = Carbon::now();
 
@@ -54,13 +53,10 @@ class AssignOrdersCron extends Command
             $this->info('No unassigned orders found.');
             return;
         }
-        \Log::info('Cron Mid');
 
         // 3. Assign each unassigned order to an available delivery boy
         foreach ($unassignedOrders as $order) {
             $availableDeliveryBoys = $this->deliveryBoyRepository->getAvailableDeliveryBoys($currentTime);
-
-            \Log::info('Cron Loop 1.');
 
             if ($availableDeliveryBoys->isEmpty()) {
                 $this->error('No available delivery boys for order ID: ' . $order->id);
@@ -70,8 +66,6 @@ class AssignOrdersCron extends Command
 
             // Try to assign order to available delivery boy under capacity
             foreach ($availableDeliveryBoys as $deliveryBoy) {
-
-                \Log::info('Cron Loop 2');
 
                 $currentOrderCount = $this->orderRepository->countOrdersForDeliveryBoy($deliveryBoy->id);
 
@@ -85,8 +79,6 @@ class AssignOrdersCron extends Command
                 }
             }
         }
-
-        \Log::info('Cron Ended');
 
     }
 }

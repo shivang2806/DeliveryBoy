@@ -11,19 +11,15 @@ class DeliveryBoyRepository implements DeliveryBoyRepositoryInterface {
     }
 
     public function getAvailableDeliveryBoys($currentTime) {
-        // Get delivery boys who are not busy for the next 30 minutes and who have not reached their capacity
-        $busyDeliveryBoys = DeliveryBoy::whereHas('orders', function($query) use ($currentTime) {
-            $query->where('delivery_start_time', '>', $currentTime->subMinutes( DeliveryBoy::DeliveryDuration )); // Orders active in the next 30 minutes
-        })->pluck('id');
-
-        return DeliveryBoy::whereNotIn('id', $busyDeliveryBoys) // Exclude busy delivery boys
-            ->where(function ($query) {
-                $query->whereHas('orders', function($query) {
-                    // Ensure delivery boys with capacity left
-                    $query->havingRaw('COUNT(orders.id) < delivery_boys.max_order_capacity');
-                }, '<=', 1);
-            })
-            ->get();
+        // Fetch a delivery boy who is not currently delivering
+        return DeliveryBoy::whereDoesntHave('orders', function ($query) use ($currentTime) {
+            $query->where('delivery_start_time', '>', $currentTime->subMinutes( DeliveryBoy::DeliveryDuration ));
+        })
+        ->whereHas('orders', function ($query) {
+            // Only select delivery boys who are under capacity
+            $query->havingRaw('COUNT(orders.id) < delivery_boys.max_order_capacity');
+        }, '<=', 5) // Using a limit of 1 to filter boys based on capacity
+        ->get();
     }
 
 }
